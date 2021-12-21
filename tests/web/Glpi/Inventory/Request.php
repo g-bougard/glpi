@@ -60,7 +60,6 @@ class Request extends \GLPITestCase
     */
     private function checkResponse(GuzzleHttp\Psr7\Response $res, $reply)
     {
-        $this->integer($res->getStatusCode())->isIdenticalTo(200);
         $this->string($res->getHeader('content-type')[0])->isIdenticalTo('application/xml');
         $this->string((string)$res->getBody())
          ->isIdenticalTo("<?xml version=\"1.0\"?>\n<REPLY>$reply</REPLY>\n");
@@ -68,29 +67,45 @@ class Request extends \GLPITestCase
 
     public function testWrongHttpMethod()
     {
-        $res = $this->http_client->request(
-            'GET',
-            $this->base_uri . 'front/inventory.php',
-            [
-            'headers' => [
-               'Content-Type' => 'application/xml'
-            ]
-            ]
-        );
+        try {
+            $res = $this->http_client->request(
+                'GET',
+                $this->base_uri . 'front/inventory.php',
+                [
+                'headers' => [
+                   'Content-Type' => 'application/xml'
+                ]
+                ]
+            );
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            if ($response->getStatusCode() != 405) {
+               //throw exceptions not expected
+                throw $e;
+            }
+            $res = $e->getResponse();
+        }
         $this->checkResponse($res, '<ERROR>Method not allowed</ERROR>');
     }
 
     public function testRequestInvalidContent()
     {
-        $res = $this->http_client->request(
-            'POST',
-            $this->base_uri . 'front/inventory.php',
-            [
-            'headers' => [
-               'Content-Type' => 'application/xml'
-            ]
-            ]
-        );
+        try {
+            $res = $this->http_client->request(
+                'POST',
+                $this->base_uri . 'front/inventory.php',
+                [
+                'headers' => [
+                   'Content-Type' => 'application/xml'
+                ]
+                ]
+            );
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            if ($response->getStatusCode() != 400) {
+               //throw exceptions not expected
+                throw $e;
+            }
+            $res = $e->getResponse();
+        }
         $this->checkResponse($res, '<ERROR>XML not well formed!</ERROR>');
     }
 
