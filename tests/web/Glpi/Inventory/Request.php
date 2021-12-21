@@ -78,12 +78,9 @@ class Request extends \GLPITestCase
                 ]
             );
         } catch (\GuzzleHttp\Exception\RequestException $e) {
-            if ($response->getStatusCode() != 405) {
-               //throw exceptions not expected
-                throw $e;
-            }
             $res = $e->getResponse();
         }
+        $this->integer($res->getStatusCode())->isIdenticalTo(405);
         $this->checkResponse($res, '<ERROR>Method not allowed</ERROR>');
     }
 
@@ -100,12 +97,9 @@ class Request extends \GLPITestCase
                 ]
             );
         } catch (\GuzzleHttp\Exception\RequestException $e) {
-            if ($response->getStatusCode() != 400) {
-               //throw exceptions not expected
-                throw $e;
-            }
             $res = $e->getResponse();
         }
+        $this->integer($res->getStatusCode())->isIdenticalTo(400);
         $this->checkResponse($res, '<ERROR>XML not well formed!</ERROR>');
     }
 
@@ -126,8 +120,6 @@ class Request extends \GLPITestCase
             ]
         );
         $this->integer($res->getStatusCode())->isIdenticalTo(200);
-        $this->string($res->getHeader('content-type')[0])->isIdenticalTo('application/xml');
-        $this->string((string)$res->getBody())
-         ->isIdenticalTo("<?xml version=\"1.0\"?>\n<REPLY><PROLOG_FREQ>24</PROLOG_FREQ><RESPONSE>SEND</RESPONSE></REPLY>\n");
+        $this->checkResponse($res, '<PROLOG_FREQ>24</PROLOG_FREQ><RESPONSE>SEND</RESPONSE>');
     }
 }
